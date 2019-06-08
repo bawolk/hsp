@@ -1,0 +1,8 @@
+{-# LANGUAGE OverloadedStrings #-}
+
+module HspCustom where
+
+import qualified Data.Text as T
+
+testA :: T.Text -> Bool
+testA = T.isPrefixOf "A" 

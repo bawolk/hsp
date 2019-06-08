@@ -1,0 +1,26 @@
+# sub
+hsp 'sub "x.*l" "$" p'
+<<<
+An example of
+lx
+>>>
+An e$e of
+lx
+>>>= 0
+
+# re
+hsp --rerun 're "(x.*l)" p'
+<<<
+>>>
+xampl
+
+>>>= 0
+
+# rekeep 
+hsp 'rekeep "x.*l"'
+<<<
+An example of
+lx
+>>>
+An example of
+>>>= 0

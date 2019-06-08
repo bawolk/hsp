@@ -1,0 +1,6 @@
+# fp
+cat test/file.test | hsp -t test/file.test 'fp == p| tshow $ length pp == length fpp' 
+<<<
+>>>
+True
+>>>= 0

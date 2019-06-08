@@ -1,0 +1,178 @@
+# 1 replace
+hsp 'replace "This" "That" p'
+<<<
+This is an example.
+XXXX
+>>>
+That is an example.
+XXXX
+>>>= 0
+
+# 2 dot
+hsp --no-color 'dot'
+<<<
+hello_world.txt
+a..b
+>>>
+[0][[0]hello_world[1]txt]
+[1][[0]a[1][2]b]
+>>>= 0
+
+# 3 split, then pick out field
+hsp 'dot!!1'
+<<<
+hello_world.txt
+>>>
+txt
+>>>= 0
+
+# 4 split, then restore with new character
+hsp 'dot|u'
+<<<
+hello_world.txt
+>>>
+hello_world_txt
+>>>= 0
+
+# 5 sort
+hsp --no-color 'sort pp'
+<<<
+Cat
+Aardvark
+>>>
+[0]Aardvark
+[1]Cat
+>>>= 0
+
+# 5 pp, followed by p
+hsp 'sort pp|p'
+<<<
+Cat
+Aardvark
+>>>
+Aardvark
+Cat
+>>>= 0
+
+# a (or all)
+hsp --no-color 'a'
+<<<
+x*y%cc^^k()p'q"r
+>>>
+[0][[0]x[1]y[2]cc[3]k[4]p[5]q[6]r]
+>>>= 0
+
+# cdigits
+hsp --no-color 'cdigits p'
+<<<
+ad76#bv7!!
+>>>
+[0][[0]76[1]7]
+>>>= 0
+
+# cpunctuation
+hsp --no-color 'cpunctuation p'
+<<<
+ad76#bv7!!
+>>>
+[0][[0]#[1]!!]
+>>>= 0
+
+# selecting characters
+hsp 'T.drop 1 $ T.take 4 p'
+<<<
+Hello
+Goodbye
+>>>
+ell
+ood
+>>>= 0
+
+# (!!!) select pp
+hsp --no-color 'pp !!! [0,2]'
+<<<
+a:b:c
+d:e:f
+g:h
+>>>
+[0]a:b:c
+[1]g:h
+>>>= 0
+
+# (!!) - select a single string
+hsp --no-color --rerun 'c | p !! 1'
+<<<
+b
+e
+h
+>>>= 0
+
+# select pp, followed by p
+hsp --no-color 'pp !!! [0,2]| p'
+<<<
+a:b:c
+d:e:f
+g:h:i
+>>>
+a:b:c
+g:h:i
+>>>= 0
+
+# divide
+hsp --no-color 'divide 2 pp'
+<<<
+aaa
+bbb
+ccc
+ddd
+eee
+>>>
+[0][[0]aaa[1]bbb]
+[1][[0]ccc[1]ddd]
+[2][[0]eee]
+>>>= 0
+
+# divide, followed by p
+hsp --rerun --no-color 'divide 2 pp| p'
+<<<
+>>>
+[0][[0]aaa[1]bbb]
+[1][[0]ccc[1]ddd]
+[2][[0]eee]
+>>>= 0
+
+# uniq
+hsp --no-color 'uniq pp'
+<<<
+a
+b
+a
+>>>
+[0]a
+[1]b
+>>>= 0
+
+# delimit
+hsp --no-color 'delimit ":" pp'
+<<<
+a:b:c
+d:e:f
+g:h:i
+>>>
+[0]a
+[1]b
+[2]c d
+[3]e
+[4]f g
+[5]h
+[6]i
+>>>= 0
+
+# Filter after a split
+hsp --no-color 'c|p!!1 == "dog"'
+<<<
+1:cat
+2:dog
+>>>
+[0][[0]2[1]dog]
+>>>= 0

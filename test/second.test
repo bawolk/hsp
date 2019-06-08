@@ -1,0 +1,19 @@
+# sp
+hsp 'sp' feline avis
+<<<
+cat
+bird
+>>>
+feline
+avis
+>>>= 0
+
+# sp
+hsp --no-color 'spp' feline avis
+<<<
+cat
+bird
+>>>
+[0]feline
+[1]avis
+>>>= 0

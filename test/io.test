@@ -1,0 +1,27 @@
+# pwd
+pwd | hsp 'p == pwd | tshow $ length pp'
+<<<
+>>>
+1
+>>>= 0
+
+# env
+export TEST="123"; hsp -b1 'envTEST'
+<<<
+>>>
+123
+>>>= 0
+
+# shell
+ls | hsp 'oneline pp | T.unwords $ shell "ls" | tshow $ p == hp 1'
+<<<
+>>>
+True
+>>>= 0
+
+# glob "*" equals ls
+ls | hsp 'sort pp |oneline pp | glob "*" | expand pp | sort pp| oneline pp| tshow (p == hp 2)'
+<<<
+>>>
+True
+>>>=
