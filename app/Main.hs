@@ -41,20 +41,20 @@ runCommands :: String -> PipeEnv -> Interpreter PipeEnv
 runCommands cmds pipeEnv = do
     let tokenPipe = tokenPipeline cmds (macroMap pipeEnv)
         pipeEnv'  = pipeEnv { keepHistory = any (any isHistory) tokenPipe }
-    customDirectory <- liftIO $ getEnv "HSP_CUSTOM"
-    b               <-
-        liftIO
-        $  doesPathExist
-        $  customDirectory
-        ++ [pathSeparator]
-        ++ "HspCustom.hs"
-    when
-        b
-        (do
-            set [searchPath := [customDirectory]]
-            loadModules ["HspCustom"]
-            setTopLevelModules ["HspCustom"]
-        )
+    customDirectory <- liftIO $ lookupEnv "HSP_CUSTOM"
+    case customDirectory of
+      Nothing -> return ()
+      Just dir -> do
+        b <- liftIO
+             $  doesPathExist
+             $  dir </> "HspCustom.hs"
+        when
+          b
+          (do
+              set [searchPath := [dir]]
+              loadModules ["HspCustom"]
+              setTopLevelModules ["HspCustom"]
+          )
     setImportsQ
         [ ("Prelude"    , Nothing)
         , ("Data.Text"  , Just "T")
