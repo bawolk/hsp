@@ -70,7 +70,7 @@ getTmpFileName :: IO String
 getTmpFileName = do
     dir  <- getTemporaryDirectory
     name <- getEnv "USER"
-    return (dir ++ [pathSeparator] ++ "hsp_rerun_" ++ name)
+    return (dir </> "hsp_rerun_" ++ name)
 
 main :: IO ()
 main = do
@@ -78,10 +78,14 @@ main = do
     let color          = if noColor options then colorNo else colorYes
     let mcolor         = T.unpack . color
     let (cmds, second) = fromMaybe ("", []) (uncons (args options))
-    macroFile <- (++ pathSeparator : "hsp_user_macros.json")
-        <$> getEnv "HSP_MACRO_DIR"
-    macroGroupFile <- (++ pathSeparator : "hsp_group_macros.json")
-        <$> getEnv "HSP_GROUP_MACRO_DIR"
+    macroFile <- do
+      mdir <- lookupEnv "HSP_MACRO_DIR"
+      dir <- maybe (getEnv "HOME") return mdir
+      return $ dir </> "hsp_user_macros.json"
+    macroGroupFile <- do
+      mdir <- lookupEnv "HSP_GROUP_MACRO_DIR"
+      dir <- maybe (getEnv "HOME") return mdir
+      return $ dir </> "hsp_group_macros.json"
     macroMap      <- mkMacroMapFromFile macroFile
     macroGroupMap <- mkMacroMapFromFile macroGroupFile
     let macroCombinedMap = if macroGroup options
