@@ -19,6 +19,7 @@ library
                      , aeson
                      , unordered-containers
                      , text
+                     , directory
                      , filepath
                      , filemanip
                      , process

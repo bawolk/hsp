@@ -6,6 +6,7 @@ import           Text.Regex
 import           Data.List
 import           Data.Maybe
 import qualified Data.Text                     as T
+import           System.Directory               ( getCurrentDirectory )
 import           System.Environment             ( getEnv )
 import           System.FilePath                ( pathSeparator
                                                 , splitFileName
@@ -234,7 +235,7 @@ quote = "\""
 
 globFunc :: String -> IO [Text]
 globFunc s = do
-  pwd <- getEnv "HSP_PWD"
+  pwd <- getCurrentDirectory
   let prefix  = pwd ++ [pathSeparator]
       -- if glob pattern relative, need to prefix it with correct directory
       globStr = if head s == pathSeparator then s else prefix ++ s
@@ -248,9 +249,9 @@ envFunc :: String -> IO Text
 envFunc s = pack <$> getEnv (drop 3 s)
 
 pwdFunc :: IO Text
-pwdFunc = pack <$> getEnv "HSP_PWD"
+pwdFunc = pack <$> getCurrentDirectory
 
 shellFunc :: String -> IO [Text]
 shellFunc s = do
-  pwd <- getEnv "HSP_PWD"
+  pwd <- getCurrentDirectory
   T.lines . pack <$> readCreateProcess ((shell s) { cwd = Just pwd }) ""
