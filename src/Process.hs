@@ -13,7 +13,6 @@ import qualified Data.HashMap.Strict           as H
 import           Data.List
 import qualified Data.Text                     as T
 import           Data.Text                      ( Text )
-import           System.FilePath                ( pathSeparator )
 
 import           Functions
 import           Parser
