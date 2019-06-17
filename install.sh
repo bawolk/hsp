@@ -4,15 +4,18 @@ cat <<EOF > hsp
 #!/usr/bin/env bash
 HSP_DIR=`pwd`
 HSP_PWD=\`pwd\`
-HSP_CUSTOM=\$HSP_DIR
+
+# The default HspCustom directory is $HOME.
+# Uncomment and edit the following line to choose another directory.
+# export HSP_CUSTOM=path/to/otherdir
 
 # The default macro directory is $HOME.
-# Uncomment these lines and choose new directories if desired
+# Uncomment and edit these lines and choose new directories if desired.
 # HSP_MACRO_DIR=path/to/otherdir
 # HSP_GROUP_MACRO_DIR=path/to/otherdir
 # export HSP_MACRO_DIR HSP_GROUP_MACRO_DIR
 
-export HSP_PWD HSP_DIR HSP_CUSTOM
+export HSP_PWD HSP_DIR
 (cd \$HSP_DIR; stack exec -- hsp "\$@")
 EOF
 chmod +x hsp
