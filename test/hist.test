@@ -1,0 +1,7 @@
+# history after a split and resulting in a Text
+hsp 'w|head p |m|init p|m|last hp 3| (hp -2) <> " >= " <> p'
+<<<
+abstract-deque-0.3	Abstract, parameterized interface to mutable Deques
+>>>
+abstract-deque >= 0.3
+>>>= 0

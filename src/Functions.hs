@@ -137,6 +137,13 @@ f14 cmdexpr ll func = do
     fun <- interpret cmdexpr (as :: ExtraL [Text])
     return $ mkL (func ll fun) (o <$> ll)
 
+-- Using hp when referred pipe is a split and producing a Text
+f15 :: String -> [LLine] -> Func4L Text -> Interpreter Pipe
+f15 cmdexpr ll func = do
+    fun <- interpret cmdexpr (as :: ExtraL Text)
+    -- return $ mkL (func ll fun) (o <$> ll)
+    return $ mkS (func ll fun) (o <$> ll) False
+
 -- E.g., when 'pwd', 'envXXX', or 'date' is used
 fio1 :: String -> [SLine] -> Interpreter Pipe
 fio1 cmdexpr ss = do

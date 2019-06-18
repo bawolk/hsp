@@ -176,6 +176,8 @@ process pipeEnv toks = do
         (False, Simple SplitYes, RBool     ) -> f13 cmdexpr pipeLLines keepfalse
         (False, Extra SplitYes, RTextList) ->
             f14 cmdexpr pipeLLines (fextra histLLines)
+        (False, Extra SplitYes, RText) ->
+            f15 cmdexpr pipeLLines (fextra histLLines)
 
         (True, Simple SplitNo, RText) -> fio1 cmdexpr pipeSLines
         (True, Simple SplitNo, RBool) ->
