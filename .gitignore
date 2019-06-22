@@ -2,3 +2,5 @@
 hsp.cabal
 *~
 hsp
+dist*
+.ghc*
