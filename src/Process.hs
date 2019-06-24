@@ -52,6 +52,8 @@ toFuncResult funcType = case noIOResult of
     "[Line Text]"   -> RSLineList
     "[Line T.Text]" -> RSLineList
     "[LLine]"   -> RLLineList
+    "[Line [Text]]" -> RLLineList
+    "[Line [T.Text]]" -> RLLineList
     "[[SLine]]" -> RSLineListList
     x           -> case length x of
         1 -> RText -- something like Data.String.IsString p => SLine -> p

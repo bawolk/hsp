@@ -1,0 +1,21 @@
+# getText with unsplit line
+hsp --no-color 'dropWhile (T.isPrefixOf "aa" . getText) pp'
+<<<
+aa
+bb
+aa
+>>>
+[0]bb
+[1]aa
+>>>=0
+
+# getText with split line
+hsp --no-color 'c | dropWhileEnd (\tt -> (head $ getText tt) == "1") pp | c'
+<<<
+1:a
+2:b
+1:c
+>>>
+1:a
+2:b
+>>>=0

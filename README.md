@@ -85,12 +85,15 @@ In the simple example above, the output of each of the three pipes in the pipeli
 ```
 ## Operations on the entire input list
 The entire input list can be manipulated using the `pp` variable.  In the simple example above, `sort pp` sorted the input.  Duplicate lines can be deleted using `nub pp` or the equivalent hsp function `uniq pp`.  Other haskell functions, such as `drop`, `take`, `tail`, and `init` can be used as well.  When `pp` is used, the output is displayed as a numbered list.
-  * **General rule.**  Although it is helpful to think of `pp` as a list of Text (or [Text] following a split), its underlying type is more complex.  Generally only functions that operate on `Ord a => [a]` are acceptable.
-  * **Exception: `getText`.**  The hsp function `getText` (actually it is a record field name) can be used to extract the Text.  This is particularly useful if you need to extract sublists using Data.List functions such as `dropWhile`, `takeWhile`, and the like.
+  * **General rule.**  Although it is helpful to think of `pp` as a list of Text (or list of [Text] following a split), its underlying type is more complex.  Generally only functions that operate on `Ord a => [a]` are acceptable.
+  * **Exception: `getText`.**  The hsp function `getText` (actually it is a record field name) can be used to extract the Text (or [Text] following a split).  This is particularly useful if you need to extract sublists using Data.List functions such as `dropWhile`, `takeWhile`, and the like.
 ```bash
   $ echo $'aa\nbb\naa' | hsp 'dropWhile (T.isPrefixOf "aa" . getText) pp'
   [0]bb
   [1]aa
+  $ echo $'1:a\n2:b\n1:c' | hsp 'c | dropWhileEnd (\tt -> (head $ getText tt) == "1") pp | c'
+  1:a
+  2:b
 ```
   * **Adding lines using string literals.**  Through the magic of the OverloadedStrings GHC extension, a list of string literals can be used to add lines to the input.  Any attempt to directly use any other object of type Text in this manner will fail.  Note that `pp` is not constant throughout the pipeline.  In each pipe it represents the output from the preceeding pipe.
 ```bash
