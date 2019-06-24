@@ -69,7 +69,7 @@ specials = do
         | i `elem` directs
         -> return $ Identifier ("(" ++ i ++ " pline)")
         | i `elem` implicitP
-        -> return $ Identifier ("(" ++ i ++ " (p pline))")
+        -> return $ Identifier ("(" ++ i ++ " (getText pline))")
         -- handles T. properly
         | i == "T"
         -> return $ Ignore "T"
@@ -99,12 +99,12 @@ transBuiltin toks pipeEnv = map tb toks  where
     pipe = head (pipeline pipeEnv)
     tb (Ignore s) = Ignore s
     tb (Split s) =
-        Identifier ("(" ++ s ++ (if isS pipe then "" else "'") ++ " (p pline))")
-    tb P = Identifier "(p pline)"
+        Identifier ("(" ++ s ++ (if isS pipe then "" else "'") ++ " (getText pline))")
+    tb P = Identifier "(getText pline)"
     tb Pp | isS pipe  = Identifier "(getSLines $ head $ pipeline env)"
           | otherwise = Identifier "(getLLines $ head $ pipeline env)"
-    tb Sp  = Identifier "(p sp)"
-    tb Fp  = Identifier "(p fp)"
+    tb Sp  = Identifier "(getText sp)"
+    tb Fp  = Identifier "(getText fp)"
     tb Spp = Identifier "(spp env)"
     tb Fpp = Identifier "(fpp env)"
     tb (Hpp n) =
@@ -116,7 +116,7 @@ transBuiltin toks pipeEnv = map tb toks  where
                 ++ "Lines (history ("
                 ++ show n
                 ++ ") (pipeline env)))"
-    tb (Hp   _) = Identifier "(p hist)"
+    tb (Hp   _) = Identifier "(getText hist)"
     tb (Glob _) = Identifier "glob"
     tb t        = t
 

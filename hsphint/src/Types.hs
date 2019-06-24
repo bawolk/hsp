@@ -12,7 +12,7 @@ import qualified Data.HashMap.Strict as M
 import qualified Data.Text as T
 import Data.Text (Text, pack, unpack, splitOn)
 
-data Line a = Line { n :: Int, p :: a, o :: Text } 
+data Line a = Line { n :: Int, getText :: a, o :: Text } 
 type SLine = Line Text
 type LLine = Line [Text]
 data Pipe = S {ssl :: [SLine], showNumber :: Bool}
@@ -20,9 +20,9 @@ data Pipe = S {ssl :: [SLine], showNumber :: Bool}
 type Pipeline = [Pipe]
 
 instance Eq a => Eq (Line a) where
-  l1 == l2 = p l1 == p l2
+  l1 == l2 = getText l1 == getText l2
 instance Ord a => Ord (Line a) where
-  compare l1 l2 = compare (p l1) (p l2)
+  compare l1 l2 = compare (getText l1) (getText l2)
 
 data MacroInfo =
     MacroInfo { date :: !String
@@ -69,7 +69,7 @@ data PipeEnv = PipeEnv { spp :: [SLine]
                        }
 
 instance Functor Line where
-  fmap f s = s { p = f (p s) }                       
+  fmap f s = s { getText = f (getText s) }                       
 instance IsString (Line Text) where
   fromString s = Line 0 (pack s) (pack s)
 

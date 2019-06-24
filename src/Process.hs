@@ -13,6 +13,7 @@ import qualified Data.HashMap.Strict           as H
 import           Data.List
 import qualified Data.Text                     as T
 import           Data.Text                      ( Text )
+import           Data.Maybe                     ( fromMaybe )
 
 import           Functions
 import           Parser
@@ -41,19 +42,24 @@ instance Show Split where
         SplitNo  -> "SLine"
 
 toFuncResult :: String -> FuncResult
-toFuncResult = \case
+toFuncResult funcType = case noIOResult of 
     "Text"      -> RText
     "T.Text"    -> RText
     "[Text]"    -> RTextList
     "[T.Text]"  -> RTextList
     "Bool"      -> RBool
     "[SLine]"   -> RSLineList
+    "[Line Text]"   -> RSLineList
+    "[Line T.Text]" -> RSLineList
     "[LLine]"   -> RLLineList
     "[[SLine]]" -> RSLineListList
     x           -> case length x of
         1 -> RText -- something like Data.String.IsString p => SLine -> p
         3 -> RTextList -- something like Data.String.IsString a => SLine -> [a]
         _ -> RUnknown
+  where
+    result = last (splitOnStr " -> " funcType)
+    noIOResult = fromMaybe result (stripPrefix "IO " result)
 
 toSplit :: Bool -> Split
 toSplit b = if b then SplitYes else SplitNo
@@ -155,7 +161,7 @@ process pipeEnv toks = do
     -- say cmdexpr
     t <- typeOf cmdexpr
     -- say t
-    let funcResult = toFuncResult $ last $ words t
+    let funcResult = toFuncResult t
     -- say $ show (hasIO, funcArg, funcResult)
     newPipe <- case (hasIO, funcArg, funcResult) of
         (False, Simple SplitNo, RText) -> f1 cmdexpr pipeSLines

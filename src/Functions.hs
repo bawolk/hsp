@@ -66,7 +66,7 @@ f6 :: String -> PipeEnv -> Interpreter Pipe
 f6 cmdexpr pipeEnv = do
     fun <- interpret cmdexpr (as :: PipeEnv -> [[SLine]])
     let slines = fun pipeEnv
-        mergeSLines sls = Line 0 (p <$> sls) ""
+        mergeSLines sls = Line 0 (getText <$> sls) ""
     return $ renumberPipe (L $ mergeSLines <$> slines)
 
 -- handles 'oneline pp'

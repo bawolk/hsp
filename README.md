@@ -84,8 +84,14 @@ In the simple example above, the output of each of the three pipes in the pipeli
   fish*d-7
 ```
 ## Operations on the entire input list
-The entire input list can be manipulated using the `pp` variable.  In the simple example above, `sort pp` sorted the input.  Duplicate lines can be deleted using `nub pp` or the equivalent hsp function `uniq pp`.  Other haskell functions, such as `drop`, `take`, `tail`, and `init` can be used as well.
-  * **General rule.**  Although it is helpful to think of `pp` as a list of Text, its underlying type is more complex.  Only functions that operate on `Ord a => [a]` are acceptable.  A function that attempts to operate on the underlying type `a` will generally fail.  When `pp` is used, the output is displayed as a numbered list.
+The entire input list can be manipulated using the `pp` variable.  In the simple example above, `sort pp` sorted the input.  Duplicate lines can be deleted using `nub pp` or the equivalent hsp function `uniq pp`.  Other haskell functions, such as `drop`, `take`, `tail`, and `init` can be used as well.  When `pp` is used, the output is displayed as a numbered list.
+  * **General rule.**  Although it is helpful to think of `pp` as a list of Text (or [Text] following a split), its underlying type is more complex.  Generally only functions that operate on `Ord a => [a]` are acceptable.
+  * **Exception: `getText`.**  The hsp function `getText` (actually it is a record field name) can be used to extract the Text.  This is particularly useful if you need to extract sublists using Data.List functions such as `dropWhile`, `takeWhile`, and the like.
+```bash
+  $ echo $'aa\nbb\naa' | hsp 'dropWhile (T.isPrefixOf "aa" . getText) pp'
+  [0]bb
+  [1]aa
+```
   * **Adding lines using string literals.**  Through the magic of the OverloadedStrings GHC extension, a list of string literals can be used to add lines to the input.  Any attempt to directly use any other object of type Text in this manner will fail.  Note that `pp` is not constant throughout the pipeline.  In each pipe it represents the output from the preceeding pipe.
 ```bash
   $ echo $'cat\ndog' | hsp '["Animals", "======="] ++ pp ++ ["bird"]'

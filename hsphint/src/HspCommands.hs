@@ -185,7 +185,7 @@ divide n = go []
 before :: Text -> Int -> [SLine] -> [[SLine]]
 before t n pp = go [] ss
  where
-  ss = reverse $ p <$> pp
+  ss = reverse $ getText <$> pp
   go result rem
     | null rem
     = drop 1 $ ((\s -> Line 0 s "") <$>) <$> result
@@ -196,7 +196,7 @@ before t n pp = go [] ss
 after :: Text -> Int -> [SLine] -> [[SLine]]
 after t n pp = go [] ss
  where
-  ss = p <$> pp
+  ss = getText <$> pp
   go result rem
     | null rem
     = ((\s -> Line 0 s "") <$>) <$> reverse result
@@ -208,14 +208,14 @@ matrix :: Text -> Int -> [SLine] -> [[SLine]]
 matrix s n pp = zipWith (++) (before s n pp) (drop 1 <$> after s n pp)
 
 oneline :: [SLine] -> Text
-oneline sls = T.unwords $ fmap p sls
+oneline sls = T.unwords $ fmap getText sls
 
 onelined :: Text -> [SLine] -> Text
-onelined d sls = T.intercalate d $ fmap p sls
+onelined d sls = T.intercalate d $ fmap getText sls
 
 -- takes a split pp or split hpp and makes each field a separate line
 expand :: [LLine] -> [SLine]
-expand lls = zipWith3 Line [0 ..] (concatMap p lls) (repeat "")
+expand lls = zipWith3 Line [0 ..] (concatMap getText lls) (repeat "")
 
 uniq :: Eq a => [a] -> [a]
 uniq = nub

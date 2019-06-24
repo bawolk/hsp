@@ -10,7 +10,7 @@ import           Types
 displayPipe :: ColorF -> Pipe -> Text
 displayPipe color = display
  where
-  display (S s showNumbers) | not showNumbers = T.unlines (p <$> s)
+  display (S s showNumbers) | not showNumbers = T.unlines (getText <$> s)
                             | showNumbers     = T.unlines (f <$> s)
    where
     f sline =
@@ -19,7 +19,7 @@ displayPipe color = display
         <> tshow (n sline)
         <> "]"
         <> color Green
-        <> p sline
+        <> getText sline
         <> color Off
   display (L ls) = T.unlines (f <$> ls)
    where
@@ -31,7 +31,7 @@ displayPipe color = display
         <> color Bold
         <> color Green
         <> "["
-        <> T.concat (numberFields (p lline))
+        <> T.concat (numberFields (getText lline))
         <> color Bold
         <> color Green
         <> "]"
@@ -51,5 +51,5 @@ displayPipe color = display
       [0 ..]
 
 removeBlanks :: Pipe -> Pipe
-removeBlanks (S x sh) = S (filter (not . T.null . p) x) sh
-removeBlanks (L x   ) = L $ filter (not . null . p) x
+removeBlanks (S x sh) = S (filter (not . T.null . getText) x) sh
+removeBlanks (L x   ) = L $ filter (not . null . getText) x
