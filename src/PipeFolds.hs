@@ -32,16 +32,10 @@ hasppF = Fold.any isPpType
         _     -> False
 
 hasdateF :: Fold.Fold Token Bool
-hasdateF = Fold.any isDate
-  where
-    isDate (Identifier "date") = True
-    isDate _                   = False
+hasdateF = Fold.elem (Identifier "date")
 
 haspwdF :: Fold.Fold Token Bool
-haspwdF = Fold.any isPwd
-  where
-    isPwd (Identifier "pwd") = True
-    isPwd _                  = False
+haspwdF = Fold.elem (Identifier "pwd")
 
 hpTokenF :: Fold.Fold Token (Maybe Token)
 hpTokenF = Fold.find isHp
@@ -49,18 +43,14 @@ hpTokenF = Fold.find isHp
     isHp (Hp _) = True
     isHp _      = False
 
-collect :: (a -> Bool) -> Fold.Fold a [a]
-collect pred = Fold.Fold step [] reverse
-    where step x y = if pred y then y : x else x
-
 envTokensF :: Fold.Fold Token [Token]
-envTokensF = collect pred
+envTokensF = Fold.prefilter pred Fold.list 
   where
     pred (Env _) = True
     pred _       = False
 
 shellTokensF :: Fold.Fold Token [Token]
-shellTokensF = collect pred
+shellTokensF = Fold.prefilter pred Fold.list
   where
     pred (Shell _) = True
     pred _         = False
