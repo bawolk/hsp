@@ -153,12 +153,9 @@ process pipeEnv toks = do
                                        pps
                                        hpps
         fextraIO :: [a] -> [a] -> (SLine -> SLine -> a -> a -> IO b) -> IO [b]
-        fextraIO hpps pps fun = liftIO $ sequence $ zipWith4
-            fun
-            (spp pipeEnv ++ repeat blankSLine)
-            (fpp pipeEnv ++ repeat blankSLine)
-            pps
-            hpps
+        fextraIO hpps pps fun = liftIO $ sequence $ fextra hpps
+                                                           pps
+                                                           fun
         (cmdexpr, hasIO, funcArg) = buildFunction pipeEnv toks
     -- say cmdexpr
     t <- typeOf cmdexpr
