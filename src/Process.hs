@@ -134,6 +134,8 @@ process :: PipeEnv -> [Token] -> Interpreter PipeEnv
 process PipeEnv{..} toks = do
     -- say $ show toks
     let pipe            = head pipeline
+        sLines          = getSLines pipe
+        lLines          = getLLines pipe
         numbered        = isNumbered pipe
 -- keep history only if history is used in the pipeline
         currentPipeline = if keepHistory then pipeline else []
@@ -142,9 +144,9 @@ process PipeEnv{..} toks = do
             Just (Hp n) -> Just $ history n currentPipeline
             _           -> Nothing
         (pipeSLines, histSLines) =
-            equateLists (getSLines pipe) (maybe [] getSLines hpipe) blankSLine
+            equateLists sLines (maybe [] getSLines hpipe) blankSLine
         (pipeLLines, histLLines) =
-            equateLists (getLLines pipe) (maybe [] getLLines hpipe) blankLLine
+            equateLists lLines (maybe [] getLLines hpipe) blankLLine
         fextra :: [a] -> [a] -> (SLine -> SLine -> a -> a -> b) -> [b]
         fextra hpps pps fun = zipWith4 fun
                                        (spp ++ repeat blankSLine)
@@ -162,43 +164,43 @@ process PipeEnv{..} toks = do
     let funcResult = toFuncResult t
     -- say $ show (hasIO, funcArg, funcResult)
     newPipe <- case (hasIO, funcArg, funcResult) of
-        (False, Simple SplitNo, RText) -> f1 cmdexpr pipeSLines
+        (False, Simple SplitNo, RText) -> f1 cmdexpr sLines
         (False, Simple SplitNo, RBool) ->
-            f2 cmdexpr pipeSLines keepFalse numbered
+            f2 cmdexpr sLines keepFalse numbered
         (False, PP             , RSLineList    ) -> f3 cmdexpr PipeEnv{..}
-        (False, Simple SplitNo , RTextList     ) -> f4 cmdexpr pipeSLines
-        (False, Simple SplitYes, RText         ) -> f5 cmdexpr pipeLLines
+        (False, Simple SplitNo , RTextList     ) -> f4 cmdexpr sLines
+        (False, Simple SplitYes, RText         ) -> f5 cmdexpr lLines
         (False, PP             , RSLineListList) -> f6 cmdexpr PipeEnv{..}
         (False, PP             , RText         ) -> f7 cmdexpr PipeEnv{..}
         (False, PP             , RTextList     ) -> f8 cmdexpr PipeEnv{..}
-        (False, Simple SplitYes, RTextList     ) -> f9 cmdexpr pipeLLines
+        (False, Simple SplitYes, RTextList     ) -> f9 cmdexpr lLines
         (False, Extra SplitNo, RText) ->
             f10 cmdexpr pipeSLines (fextra histSLines)
         (False, Extra SplitNo, RBool) ->
             f11 cmdexpr pipeSLines (fextra histSLines) keepFalse numbered
         (False, PP             , RLLineList) -> f12 cmdexpr PipeEnv{..}
-        (False, Simple SplitYes, RBool     ) -> f13 cmdexpr pipeLLines keepFalse
+        (False, Simple SplitYes, RBool     ) -> f13 cmdexpr lLines keepFalse
         (False, Extra SplitYes, RTextList) ->
             f14 cmdexpr pipeLLines (fextra histLLines)
         (False, Extra SplitYes, RText) ->
             f15 cmdexpr pipeLLines (fextra histLLines)
 
-        (True, Simple SplitNo, RText) -> fio1 cmdexpr pipeSLines
+        (True, Simple SplitNo, RText) -> fio1 cmdexpr sLines
         (True, Simple SplitNo, RBool) ->
-            fio2 cmdexpr pipeSLines keepFalse numbered
+            fio2 cmdexpr sLines keepFalse numbered
         (True, PP             , RSLineList) -> fio3 cmdexpr PipeEnv{..} numbered
-        (True, Simple SplitNo , RTextList ) -> fio4 cmdexpr pipeSLines
-        (True, Simple SplitYes, RText     ) -> fio5 cmdexpr pipeLLines
+        (True, Simple SplitNo , RTextList ) -> fio4 cmdexpr sLines
+        (True, Simple SplitYes, RText     ) -> fio5 cmdexpr lLines
                                         -- fio6 not implemented
         (True, PP             , RText     ) -> fio7 cmdexpr PipeEnv{..}
         (True, PP             , RTextList ) -> fio8 cmdexpr PipeEnv{..}
-        (True, Simple SplitYes, RTextList ) -> fio9 cmdexpr pipeLLines
+        (True, Simple SplitYes, RTextList ) -> fio9 cmdexpr lLines
         (True, Extra SplitNo, RText) ->
             fio10 cmdexpr pipeSLines (fextraIO histSLines)
         (True, Extra SplitNo, RBool) ->
             fio11 cmdexpr pipeSLines (fextraIO histSLines) keepFalse numbered
         (True, PP, RLLineList) -> fio12 cmdexpr PipeEnv{..}
-        (True, Simple SplitYes, RBool) -> fio13 cmdexpr pipeLLines keepFalse
+        (True, Simple SplitYes, RBool) -> fio13 cmdexpr lLines keepFalse
         (True, Extra SplitYes, RTextList) ->
             fio14 cmdexpr pipeLLines (fextraIO histLLines)
         _ -> errorWithoutStackTrace $ "Unimplemented pipe expression: " ++ show
