@@ -83,11 +83,10 @@ equateLists l1 l2 item = unzip $ go l1 l2
     go (x : xs) []       = (x, item) : go xs []
     go (x : xs) (y : ys) = (x, y) : go xs ys
 
-buildFunction :: PipeEnv -> [Token] -> FuncData
-buildFunction PipeEnv{..} toks = (func, not (null ioLines), funcArg)
+buildFunction :: PipeEnv -> PipeInfo -> [Token] -> FuncData
+buildFunction PipeEnv{..} PipeInfo{..} toks = (func, not (null ioLines), funcArg)
   where
     pipe     = head pipeline
-    PipeInfo{..} = getPipeInfo toks
     hpipe    = case hpToken of
         Just (Hp n) -> Just $ history n pipeline
         _           -> Nothing
@@ -156,7 +155,7 @@ process PipeEnv{..} toks = do
         fextraIO hpps pps fun = liftIO $ sequence $ fextra hpps
                                                            pps
                                                            fun
-        (cmdexpr, hasIO, funcArg) = buildFunction PipeEnv{..} toks
+        (cmdexpr, hasIO, funcArg) = buildFunction PipeEnv{..} pipeInfo toks
     -- say cmdexpr
     t <- typeOf cmdexpr
     -- say t
