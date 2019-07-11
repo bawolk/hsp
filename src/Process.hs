@@ -1,5 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
+
 module Process
     ( process
     , renumberPipe
@@ -82,36 +84,36 @@ equateLists l1 l2 item = unzip $ go l1 l2
     go (x : xs) (y : ys) = (x, y) : go xs ys
 
 buildFunction :: PipeEnv -> [Token] -> FuncData
-buildFunction pipeEnv toks = (func, not (null ioLines), funcArg)
+buildFunction PipeEnv{..} toks = (func, not (null ioLines), funcArg)
   where
-    pipe     = head $ pipeline pipeEnv
-    pipeInfo = getPipeInfo toks
-    hpipe    = case hpToken pipeInfo of
-        Just (Hp n) -> Just $ history n (pipeline pipeEnv)
+    pipe     = head pipeline
+    PipeInfo{..} = getPipeInfo toks
+    hpipe    = case hpToken of
+        Just (Hp n) -> Just $ history n pipeline
         _           -> Nothing
     ptype = case hpipe of
         Just x  -> if isS x then SplitNo else SplitYes
         Nothing -> if isS pipe then SplitNo else SplitYes
-    pwd  = if haspwd pipeInfo then "pwd <- pwdFunc;" else ""
-    date = if hasdate pipeInfo then "date <- getCurrentTime;" else ""
+    pwd  = if haspwd then "pwd <- pwdFunc;" else ""
+    date = if hasdate then "date <- getCurrentTime;" else ""
     envs = concatMap (\(Env s) -> s ++ " <- envFunc " ++ show s ++ ";")
-                     (envTokens pipeInfo)
+                     envTokens
     shells =
         let f n (Shell s) =
                     "shell" ++ show n ++ " <- shellFunc " ++ show s ++ ";"
-        in  concat $ zipWith f [0 ..] (shellTokens pipeInfo)
+        in  concat $ zipWith f [0 ..] shellTokens
     glob = maybe ""
                  (\(Glob s) -> "glob <- globFunc " ++ show s ++ ";")
-                 (globToken pipeInfo)
+                 globToken
     ioLines = pwd ++ date ++ envs ++ shells ++ glob
     transToks tks =
         let f (ts, n) tok
                 | Shell _ <- tok = (Shell ("shell" ++ show n) : ts, n + 1)
                 | otherwise      = (tok : ts, n)
         in  reverse $ fst $ foldl' f ([], 0) tks
-    cmd = tokensToString $ transToks $ transBuiltin toks pipeEnv
-    funcArg | haspp pipeInfo    = PP
-            | hasextra pipeInfo = Extra ptype
+    cmd = tokensToString $ transToks $ transBuiltin toks PipeEnv{..}
+    funcArg | haspp    = PP
+            | hasextra = Extra ptype
             | otherwise         = Simple ptype
     funcPre = case funcArg of
         PP -> "(\\(env :: PipeEnv)"
@@ -130,14 +132,12 @@ buildFunction pipeEnv toks = (func, not (null ioLines), funcArg)
     func = funcPre ++ " -> " ++ funcPost
 
 process :: PipeEnv -> [Token] -> Interpreter PipeEnv
-process pipeEnv toks = do
+process PipeEnv{..} toks = do
     -- say $ show toks
-    let pipel           = pipeline pipeEnv
-        keepfalse       = keepFalse pipeEnv
-        pipe            = head pipel
+    let pipe            = head pipeline
         numbered        = isNumbered pipe
 -- keep history only if history is used in the pipeline
-        currentPipeline = if keepHistory pipeEnv then pipel else []
+        currentPipeline = if keepHistory then pipeline else []
         pipeInfo        = getPipeInfo toks
         hpipe           = case hpToken pipeInfo of
             Just (Hp n) -> Just $ history n currentPipeline
@@ -148,15 +148,15 @@ process pipeEnv toks = do
             equateLists (getLLines pipe) (maybe [] getLLines hpipe) blankLLine
         fextra :: [a] -> [a] -> (SLine -> SLine -> a -> a -> b) -> [b]
         fextra hpps pps fun = zipWith4 fun
-                                       (spp pipeEnv ++ repeat blankSLine)
-                                       (fpp pipeEnv ++ repeat blankSLine)
+                                       (spp ++ repeat blankSLine)
+                                       (fpp ++ repeat blankSLine)
                                        pps
                                        hpps
         fextraIO :: [a] -> [a] -> (SLine -> SLine -> a -> a -> IO b) -> IO [b]
         fextraIO hpps pps fun = liftIO $ sequence $ fextra hpps
                                                            pps
                                                            fun
-        (cmdexpr, hasIO, funcArg) = buildFunction pipeEnv toks
+        (cmdexpr, hasIO, funcArg) = buildFunction PipeEnv{..} toks
     -- say cmdexpr
     t <- typeOf cmdexpr
     -- say t
@@ -165,20 +165,20 @@ process pipeEnv toks = do
     newPipe <- case (hasIO, funcArg, funcResult) of
         (False, Simple SplitNo, RText) -> f1 cmdexpr pipeSLines
         (False, Simple SplitNo, RBool) ->
-            f2 cmdexpr pipeSLines keepfalse numbered
-        (False, PP             , RSLineList    ) -> f3 cmdexpr pipeEnv
+            f2 cmdexpr pipeSLines keepFalse numbered
+        (False, PP             , RSLineList    ) -> f3 cmdexpr PipeEnv{..}
         (False, Simple SplitNo , RTextList     ) -> f4 cmdexpr pipeSLines
         (False, Simple SplitYes, RText         ) -> f5 cmdexpr pipeLLines
-        (False, PP             , RSLineListList) -> f6 cmdexpr pipeEnv
-        (False, PP             , RText         ) -> f7 cmdexpr pipeEnv
-        (False, PP             , RTextList     ) -> f8 cmdexpr pipeEnv
+        (False, PP             , RSLineListList) -> f6 cmdexpr PipeEnv{..}
+        (False, PP             , RText         ) -> f7 cmdexpr PipeEnv{..}
+        (False, PP             , RTextList     ) -> f8 cmdexpr PipeEnv{..}
         (False, Simple SplitYes, RTextList     ) -> f9 cmdexpr pipeLLines
         (False, Extra SplitNo, RText) ->
             f10 cmdexpr pipeSLines (fextra histSLines)
         (False, Extra SplitNo, RBool) ->
-            f11 cmdexpr pipeSLines (fextra histSLines) keepfalse numbered
-        (False, PP             , RLLineList) -> f12 cmdexpr pipeEnv
-        (False, Simple SplitYes, RBool     ) -> f13 cmdexpr pipeLLines keepfalse
+            f11 cmdexpr pipeSLines (fextra histSLines) keepFalse numbered
+        (False, PP             , RLLineList) -> f12 cmdexpr PipeEnv{..}
+        (False, Simple SplitYes, RBool     ) -> f13 cmdexpr pipeLLines keepFalse
         (False, Extra SplitYes, RTextList) ->
             f14 cmdexpr pipeLLines (fextra histLLines)
         (False, Extra SplitYes, RText) ->
@@ -186,22 +186,22 @@ process pipeEnv toks = do
 
         (True, Simple SplitNo, RText) -> fio1 cmdexpr pipeSLines
         (True, Simple SplitNo, RBool) ->
-            fio2 cmdexpr pipeSLines keepfalse numbered
-        (True, PP             , RSLineList) -> fio3 cmdexpr pipeEnv numbered
+            fio2 cmdexpr pipeSLines keepFalse numbered
+        (True, PP             , RSLineList) -> fio3 cmdexpr PipeEnv{..} numbered
         (True, Simple SplitNo , RTextList ) -> fio4 cmdexpr pipeSLines
         (True, Simple SplitYes, RText     ) -> fio5 cmdexpr pipeLLines
                                         -- fio6 not implemented
-        (True, PP             , RText     ) -> fio7 cmdexpr pipeEnv
-        (True, PP             , RTextList ) -> fio8 cmdexpr pipeEnv
+        (True, PP             , RText     ) -> fio7 cmdexpr PipeEnv{..}
+        (True, PP             , RTextList ) -> fio8 cmdexpr PipeEnv{..}
         (True, Simple SplitYes, RTextList ) -> fio9 cmdexpr pipeLLines
         (True, Extra SplitNo, RText) ->
             fio10 cmdexpr pipeSLines (fextraIO histSLines)
         (True, Extra SplitNo, RBool) ->
-            fio11 cmdexpr pipeSLines (fextraIO histSLines) keepfalse numbered
-        (True, PP, RLLineList) -> fio12 cmdexpr pipeEnv
-        (True, Simple SplitYes, RBool) -> fio13 cmdexpr pipeLLines keepfalse
+            fio11 cmdexpr pipeSLines (fextraIO histSLines) keepFalse numbered
+        (True, PP, RLLineList) -> fio12 cmdexpr PipeEnv{..}
+        (True, Simple SplitYes, RBool) -> fio13 cmdexpr pipeLLines keepFalse
         (True, Extra SplitYes, RTextList) ->
             fio14 cmdexpr pipeLLines (fextraIO histLLines)
         _ -> errorWithoutStackTrace $ "Unimplemented pipe expression: " ++ show
             (hasIO, funcArg, funcResult)
-    return $ pipeEnv { pipeline = newPipe : currentPipeline }
+    return $ PipeEnv { pipeline = newPipe : currentPipeline,.. }
